@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AutoFlow Pro - Local Automation Tool</title>
+  <meta name="description" content="Local web automation tool: requests, actions, scenarios, environments, snippets." />
+  <link rel="icon" href="/static/favicon.ico" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { color-scheme: dark; }
+    .tab-active { @apply bg-indigo-600/20 border-indigo-400; }
+    .card { @apply bg-slate-900/60 backdrop-blur border border-slate-700 rounded-xl shadow-xl; }
+    .btn-primary { @apply bg-indigo-600 hover:bg-indigo-500 text-white transition px-4 py-2 rounded-lg; }
+    .btn-outline { @apply border border-slate-600 hover:border-indigo-400 text-slate-200 px-3 py-2 rounded-lg; }
+    .badge { @apply text-xs px-2 py-0.5 rounded bg-slate-700 border border-slate-600; }
+    .glow { box-shadow: 0 0 30px rgba(99,102,241,0.25); }
+    .fade-in { animation: fade-in .3s ease-out; }
+    @keyframes fade-in { from { opacity:.0; transform: translateY(8px);} to { opacity:1; transform:none; } }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <header class="max-w-7xl mx-auto px-4 py-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="p-3 rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-500 glow"></div>
+        <h1 class="text-2xl font-bold">AutoFlow Pro</h1>
+      </div>
+      <nav class="flex items-center space-x-2">
+        <a class="btn-outline" href="https://docs.lovable.dev/tips-tricks/troubleshooting" target="_blank">Help</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 space-y-6">
+    <!-- Tabs -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+      <button class="tab btn-outline" data-tab="requests">Requests</button>
+      <button class="tab btn-outline" data-tab="actions">Actions</button>
+      <button class="tab btn-outline" data-tab="scenarios">Scenarios</button>
+      <button class="tab btn-outline" data-tab="environments">Environments</button>
+      <button class="tab btn-outline" data-tab="snippets">Snippets</button>
+    </div>
+
+    <!-- Panels -->
+    <section id="panel-requests" class="card p-4 fade-in">
+      <h2 class="text-lg font-semibold mb-2">Request Manager</h2>
+      <div id="requests-list" class="text-sm text-slate-300">Loading requests…</div>
+    </section>
+
+    <section id="panel-actions" class="card p-4 hidden">
+      <h2 class="text-lg font-semibold mb-2">Action Executor</h2>
+      <button id="run-demo-action" class="btn-primary">Run Selenium Demo</button>
+      <pre id="action-output" class="mt-4 text-xs"></pre>
+    </section>
+
+    <section id="panel-scenarios" class="card p-4 hidden">
+      <h2 class="text-lg font-semibold mb-2">Scenario Builder</h2>
+      <div id="scenarios-list" class="text-sm text-slate-300">Loading scenarios…</div>
+    </section>
+
+    <section id="panel-environments" class="card p-4 hidden">
+      <h2 class="text-lg font-semibold mb-2">Environments</h2>
+      <div id="envs-list" class="text-sm text-slate-300">Loading environments…</div>
+    </section>
+
+    <section id="panel-snippets" class="card p-4 hidden">
+      <h2 class="text-lg font-semibold mb-2">Snippet Library</h2>
+      <p class="text-sm text-slate-300">Preloaded with common snippets.</p>
+    </section>
+  </main>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

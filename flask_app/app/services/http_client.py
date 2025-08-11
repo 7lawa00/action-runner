@@ -1,0 +1,104 @@
+import re
+import requests
+import js2py
+from lxml import etree
+from typing import Dict, Any, Optional
+from ..models import RequestModel, Environment
+
+VAR_PATTERN = re.compile(r"\{\{\s*(.*?)\s*\}\}")
+
+
+def substitute_vars(text: str, variables: Dict[str, str]) -> str:
+    if not text:
+        return text
+    def repl(match):
+        key = match.group(1)
+        return variables.get(key, match.group(0))
+    return VAR_PATTERN.sub(repl, text)
+
+
+def run_js(script: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    if not script.strip():
+        return context
+    # Provide a tiny PM-like API
+    env_store = context.get('env', {})
+    request_ctx = context.get('request', {})
+    response_ctx = context.get('response', {})
+
+    js_prelude = f"""
+    var pm = {{
+      environment: {{
+        get: function(k) {{ return env[k] || ''; }},
+        set: function(k, v) {{ env[k] = String(v); }}
+      }},
+      request: {request_ctx},
+      response: {response_ctx}
+    }};
+    """
+    sandbox = js2py.EvalJs({'env': env_store})
+    sandbox.execute(js_prelude + "\n" + script)
+    # Export back env
+    return {**context, 'env': sandbox.env.to_dict()}
+
+
+def send_http_request(req: RequestModel, env: Optional[Environment]):
+    variables = {}
+    if env:
+        for v in env.variables:
+            variables[v.key] = v.value
+
+    # Pre-request substitutions
+    url = substitute_vars(req.url, variables)
+    headers = {k: substitute_vars(str(v), variables) for k, v in (req.headers or {}).items()}
+    body = substitute_vars(req.body or '', variables)
+
+    # Run pre-request script
+    ctx = {'env': variables, 'request': {'url': url, 'method': req.method, 'headers': headers, 'body': body}}
+    ctx = run_js(req.pre_script or '', ctx)
+    variables = ctx['env']
+    url = ctx['request']['url'] if 'request' in ctx else url
+
+    data = None
+    json_payload = None
+    if req.payload_type == 'xml':
+        data = body.encode('utf-8') if body else None
+    else:
+        json_payload = None
+        if body.strip():
+            try:
+                json_payload = requests.utils.json.loads(body)
+            except Exception:
+                json_payload = None
+                data = body
+
+    try:
+        resp = requests.request(req.method, url, headers=headers, json=json_payload, data=data, timeout=20)
+        content_type = resp.headers.get('content-type', '')
+        try:
+            parsed = resp.json()
+        except Exception:
+            parsed = resp.text
+
+        # Post-request script context
+        post_ctx = {
+            'env': variables,
+            'request': {'url': url, 'method': req.method},
+            'response': {
+                'status': resp.status_code,
+                'headers': dict(resp.headers),
+                'json': parsed if not isinstance(parsed, str) else None,
+                'text': parsed if isinstance(parsed, str) else None
+            }
+        }
+        post_ctx = run_js(req.post_script or '', post_ctx)
+        variables = post_ctx['env']
+
+        return {
+            'ok': True,
+            'status': resp.status_code,
+            'headers': dict(resp.headers),
+            'data': parsed,
+            'env': variables
+        }
+    except Exception as e:
+        return {'ok': False, 'error': str(e)}
