@@ -62,16 +62,45 @@ def send_http_request(req: RequestModel, env: Optional[Environment]):
 
     data = None
     json_payload = None
+    
     if req.payload_type == 'xml':
+        # For XML, send as raw data with proper encoding
         data = body.encode('utf-8') if body else None
+        # Ensure XML content type if not already set
+        if 'content-type' not in [k.lower() for k in headers.keys()]:
+            headers['Content-Type'] = 'application/xml'
+    elif req.payload_type == 'form':
+        # For form data, parse as form fields
+        if body.strip():
+            try:
+                # Parse form data from body (key=value&key2=value2 format)
+                form_data = {}
+                for pair in body.split('&'):
+                    if '=' in pair:
+                        key, value = pair.split('=', 1)
+                        form_data[key] = value
+                data = form_data
+            except Exception:
+                data = body
+        # Ensure form content type if not already set
+        if 'content-type' not in [k.lower() for k in headers.keys()]:
+            headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    elif req.payload_type == 'text':
+        # For plain text
+        data = body.encode('utf-8') if body else None
+        if 'content-type' not in [k.lower() for k in headers.keys()]:
+            headers['Content-Type'] = 'text/plain'
     else:
-        json_payload = None
+        # Default JSON handling
         if body.strip():
             try:
                 json_payload = requests.utils.json.loads(body)
             except Exception:
-                json_payload = None
+                # If JSON parsing fails, send as raw data
                 data = body
+        # Ensure JSON content type if not already set and we have JSON payload
+        if json_payload and 'content-type' not in [k.lower() for k in headers.keys()]:
+            headers['Content-Type'] = 'application/json'
 
     try:
         resp = requests.request(req.method, url, headers=headers, json=json_payload, data=data, timeout=20)

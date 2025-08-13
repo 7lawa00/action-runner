@@ -89,9 +89,26 @@
               <textarea id="req-headers" class="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white h-20 font-mono text-sm" placeholder='{"Content-Type": "application/json"}'></textarea>
             </div>
             
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Body Type</label>
+                <select id="req-payload-type" class="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white">
+                  <option value="json">JSON</option>
+                  <option value="xml">XML</option>
+                  <option value="form">Form Data</option>
+                  <option value="text">Plain Text</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">&nbsp;</label>
+                <button id="format-body-btn" class="btn-outline w-full">Format Body</button>
+              </div>
+            </div>
+            
             <div>
               <label class="block text-sm font-medium mb-1">Body</label>
-              <textarea id="req-body" class="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white h-32 font-mono text-sm" placeholder="Request body (JSON, XML, etc.)"></textarea>
+              <textarea id="req-body" class="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded text-white h-32 font-mono text-sm" placeholder="Request body"></textarea>
+              <div id="body-help" class="text-xs text-slate-400 mt-1">JSON format expected</div>
             </div>
             
             <div class="flex space-x-2">

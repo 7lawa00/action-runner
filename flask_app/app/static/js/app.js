@@ -121,7 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('req-url').value = request.url || '';
     document.getElementById('req-headers').value = JSON.stringify(request.headers || {}, null, 2);
     document.getElementById('req-body').value = request.body || '';
+    document.getElementById('req-payload-type').value = request.payload_type || 'json';
     document.getElementById('response-section').style.display = 'none';
+    updateBodyPlaceholder();
   }
 
   function getEditorData() {
@@ -138,8 +140,63 @@ document.addEventListener('DOMContentLoaded', () => {
       url: document.getElementById('req-url').value,
       headers: headers,
       body: document.getElementById('req-body').value,
-      payload_type: 'json'
+      payload_type: document.getElementById('req-payload-type').value
     };
+  }
+
+  function updateBodyPlaceholder() {
+    const payloadType = document.getElementById('req-payload-type').value;
+    const bodyTextarea = document.getElementById('req-body');
+    const helpText = document.getElementById('body-help');
+    
+    switch(payloadType) {
+      case 'json':
+        bodyTextarea.placeholder = '{\n  "key": "value",\n  "array": [1, 2, 3]\n}';
+        helpText.textContent = 'JSON format expected';
+        break;
+      case 'xml':
+        bodyTextarea.placeholder = '<?xml version="1.0" encoding="UTF-8"?>\n<root>\n  <element>value</element>\n</root>';
+        helpText.textContent = 'XML format expected';
+        break;
+      case 'form':
+        bodyTextarea.placeholder = 'key1=value1&key2=value2&key3=value3';
+        helpText.textContent = 'Form data: key=value&key2=value2';
+        break;
+      case 'text':
+        bodyTextarea.placeholder = 'Plain text content';
+        helpText.textContent = 'Plain text format';
+        break;
+    }
+  }
+
+  function formatBody() {
+    const payloadType = document.getElementById('req-payload-type').value;
+    const bodyTextarea = document.getElementById('req-body');
+    const content = bodyTextarea.value.trim();
+    
+    if (!content) return;
+    
+    try {
+      if (payloadType === 'json') {
+        const parsed = JSON.parse(content);
+        bodyTextarea.value = JSON.stringify(parsed, null, 2);
+      } else if (payloadType === 'xml') {
+        // Basic XML formatting - just add proper indentation
+        const formatted = content
+          .replace(/></g, '>\n<')
+          .split('\n')
+          .map((line, index) => {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('</')) return trimmed;
+            const depth = (line.match(/</g) || []).length - (line.match(/>/g) || []).length;
+            return '  '.repeat(Math.max(0, depth)) + trimmed;
+          })
+          .join('\n');
+        bodyTextarea.value = formatted;
+      }
+    } catch (error) {
+      alert('Failed to format body: ' + error.message);
+    }
   }
 
   function setupRequestHandlers() {
@@ -167,6 +224,12 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Failed to create request: ' + error.message);
       }
     };
+
+    // Payload type change handler
+    document.getElementById('req-payload-type').onchange = updateBodyPlaceholder;
+    
+    // Format body button
+    document.getElementById('format-body-btn').onclick = formatBody;
 
     // Send request button
     document.getElementById('send-request-btn').onclick = async () => {
