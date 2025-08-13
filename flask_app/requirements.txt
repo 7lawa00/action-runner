@@ -1,8 +1,8 @@
-Flask==3.0.3
-Flask-SQLAlchemy==3.1.1
-psycopg2-binary==2.9.9
+Flask==3.1.0
+Flask-SQLAlchemy==3.2.0
+psycopg2-binary==2.9.10
 requests==2.32.3
-js2py==0.74
+PyExecJS==1.5.1
 python-dotenv==1.0.1
-selenium==4.23.1
+selenium==4.28.1
 webdriver-manager==4.0.2

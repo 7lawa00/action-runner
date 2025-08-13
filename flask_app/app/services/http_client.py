@@ -1,6 +1,6 @@
 import re
 import requests
-import js2py
+import PyExecJS
 import xml.etree.ElementTree as ET
 from typing import Dict, Any, Optional
 from ..models import RequestModel, Environment
@@ -35,10 +35,12 @@ def run_js(script: str, context: Dict[str, Any]) -> Dict[str, Any]:
       response: {response_ctx}
     }};
     """
-    sandbox = js2py.EvalJs({'env': env_store})
-    sandbox.execute(js_prelude + "\n" + script)
-    # Export back env
-    return {**context, 'env': sandbox.env.to_dict()}
+    try:
+        ctx = PyExecJS.compile(js_prelude + "\n" + script + "\n; env;")
+        result = ctx.eval("env")
+        return {**context, 'env': result or env_store}
+    except Exception:
+        return {**context, 'env': env_store}
 
 
 def send_http_request(req: RequestModel, env: Optional[Environment]):
