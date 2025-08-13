@@ -1,7 +1,7 @@
 import re
 import requests
 import js2py
-from lxml import etree
+import xml.etree.ElementTree as ET
 from typing import Dict, Any, Optional
 from ..models import RequestModel, Environment
 
