@@ -76,6 +76,28 @@ def create_request():
     db.session.commit()
     return jsonify({'id': r.id}), 201
 
+@api_bp.put('/api/requests/<int:req_id>')
+def update_request(req_id: int):
+    data = request.get_json() or {}
+    req = RequestModel.query.get_or_404(req_id)
+    req.name = data.get('name', req.name)
+    req.method = data.get('method', req.method)
+    req.url = data.get('url', req.url)
+    req.headers = data.get('headers', req.headers)
+    req.body = data.get('body', req.body)
+    req.payload_type = data.get('payload_type', req.payload_type)
+    req.pre_script = data.get('pre_script', req.pre_script)
+    req.post_script = data.get('post_script', req.post_script)
+    db.session.commit()
+    return jsonify({'id': req.id})
+
+@api_bp.delete('/api/requests/<int:req_id>')
+def delete_request(req_id: int):
+    req = RequestModel.query.get_or_404(req_id)
+    db.session.delete(req)
+    db.session.commit()
+    return jsonify({'success': True})
+
 @api_bp.post('/api/requests/<int:req_id>/send')
 def send_request(req_id: int):
     data = request.get_json() or {}
