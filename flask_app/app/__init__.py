@@ -1,11 +1,13 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 from sqlalchemy import text
 from dotenv import load_dotenv
 
 # Initialize extensions
 db = SQLAlchemy()
+login_manager = LoginManager()
 
 
 def create_app():
@@ -22,10 +24,16 @@ def create_app():
 
     # Init extensions
     db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'api.login'
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        from .models import User
+        return User.query.get(int(user_id))
 
     # Register blueprints/routes
     from .routes import api_bp
-
     app.register_blueprint(api_bp)
 
     # Create tables and seed demo data on first run
@@ -38,6 +46,15 @@ def create_app():
             Snippet,
             Scenario,
             ScenarioStep,
+            User,
+            DatabaseConnection,
+            TestCase,
+            TestSuite,
+            TestSuiteCase,
+            TestCaseShare,
+            TestSuiteShare,
+            SeleniumAction,
+            SQLQuery,
         )
 
         db.create_all()
