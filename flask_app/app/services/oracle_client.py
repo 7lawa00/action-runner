@@ -13,7 +13,14 @@ class OracleClient:
     
     def _get_encryption_key(self) -> bytes:
         """Get or create encryption key for database passwords"""
-        key_path = os.getenv('DB_ENCRYPTION_KEY_PATH', '/tmp/db_key.key')
+        # Use a more reliable path that works on all systems
+        default_key_path = os.path.join(os.path.expanduser('~'), '.automation_app', 'db_key.key')
+        key_path = os.getenv('DB_ENCRYPTION_KEY_PATH', default_key_path)
+        
+        # Create directory if it doesn't exist
+        key_dir = os.path.dirname(key_path)
+        os.makedirs(key_dir, exist_ok=True)
+        
         if os.path.exists(key_path):
             with open(key_path, 'rb') as f:
                 return f.read()
