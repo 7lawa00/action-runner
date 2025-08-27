@@ -1,7 +1,8 @@
 from . import db
 from .models import (
     Environment, EnvironmentVariable, RequestModel, ActionModel, Snippet, Scenario, ScenarioStep,
-    User, DatabaseConnection, TestCase, TestSuite, SeleniumAction, SQLQuery
+    User, DatabaseConnection, TestCase, TestSuite, TestSuiteCase, TestCaseShare, TestSuiteShare,
+    SeleniumAction, SQLQuery
 )
 from .services.oracle_client import OracleClient
 
